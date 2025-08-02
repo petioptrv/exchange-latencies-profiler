@@ -14,6 +14,11 @@
     <style>
         html,body{margin:0;height:100%}
         #chartdiv {width:100%;height:460px}
+        #graph-title {
+            font:18px/1.2 sans-serif;font-weight:bold;color:#333;
+            padding:8px 12px;margin:0;background:#f8f9fa;
+            border-bottom:1px solid #e9ecef
+        }
         #graphdiv {width:100%;height:260px}                         /* ← NEW */
         #menu{
             position:absolute;top:8px;left:8px;z-index:10;
@@ -23,8 +28,9 @@
     </style>
 </head>
 <body>
-<select id="menu"><option value="all">Show All</option></select>
+<!--<select id="menu"><option value="all">Show All</option></select>-->
 <div id="chartdiv"></div>
+<div id="graph-title"></div>
 <div id="graphdiv"></div>                                      <!-- ← NEW -->
 
 <script>
@@ -32,18 +38,18 @@
     const raw = [
         { title:"JFK (New York)", coords:[-73.778137, 40.641312],
             category:"North America", latency:"17 ms",
-            latencies:[[0, 1754118650.338193], [1, 1754122250.338193], [2, 1754125850.338193]],
-            volume:[[1000, 1754118650.338193], [2000, 1754122250.338193], [1500, 1754125850.338193]]
+            latencies:[[0, 1754118650.338193], [1, 1754122250.338193], [2, 1754225850.338193]],
+            volume:[[1000, 1754118650.338193], [2000, 1754122250.338193], [1500, 1754225850.338193]]
         },
         { title:"LHR (London)",   coords:[-0.454296, 51.470020],
             category:"Europe", latency:"23 ms",
-            latencies:[[1, 1754118650.338193], [2, 1754122250.338193], [2, 1754125850.338193]],
-            volume:[[1200, 1754118650.338193], [1500, 1754122250.338193], [1500, 1754125850.338193]]
+            latencies:[[1, 1754118650.338193], [2, 1754122250.338193], [2, 1754225850.338193]],
+            volume:[[1200, 1754118650.338193], [1500, 1754122250.338193], [1500, 1754225850.338193]]
         },
         { title:"PEK (Beijing)",  coords:[116.597504, 40.072498],
             category:"Asia", latency:"44 ms",
-            latencies:[[2, 1754118650.338193], [3, 1754122250.338193], [2, 1754125850.338193]],
-            volume:[[1000, 1754118650.338193], [1000, 1754122250.338193], [1200, 1754125850.338193]]
+            latencies:[[2, 1754118650.338193], [3, 1754122250.338193], [2, 1754225850.338193]],
+            volume:[[1000, 1754118650.338193], [1000, 1754122250.338193], [1200, 1754225850.338193]]
         }
     ];
     const points = raw.map(p => ({ ...p, geometry:{type:"Point", coordinates:p.coords} }));
@@ -56,8 +62,8 @@
         mapRoot.setThemes([am5themes_Animated.new(mapRoot)]);
 
         const chart = mapRoot.container.children.push(
-            am5map.MapChart.new(mapRoot,{panX:"rotateX",panY:"rotateY",
-                wheelX:"zoom",wheelY:"zoom",projection:am5map.geoEqualEarth()})
+            am5map.MapChart.new(mapRoot,{panX:"none",panY:"none",
+                wheelX:"none",wheelY:"none",projection:am5map.geoEqualEarth()})
         );
 
         const polygonSeries = chart.series.push(
@@ -90,7 +96,11 @@
         }));
 
         const xAxis = gChart.xAxes.push(
-            am5xy.ValueAxis.new(gRoot,{renderer:am5xy.AxisRendererX.new(gRoot,{})})
+            am5xy.DateAxis.new(gRoot, {
+                baseInterval: { timeUnit: "hour", count: 1 },
+                renderer: am5xy.AxisRendererX.new(gRoot, {}),
+                tooltip: am5.Tooltip.new(gRoot, {})
+            })
         );
         const yAxisLatency = gChart.yAxes.push(
             am5xy.ValueAxis.new(gRoot,{renderer:am5xy.AxisRendererY.new(gRoot,{})})
@@ -104,6 +114,11 @@
         yAxisVolume.get("renderer").grid.template.setAll({strokeOpacity: 0});
         
         // Add axis labels
+        xAxis.children.unshift(am5.Label.new(gRoot, {
+            text: "Date",
+            x: am5.p50,
+            centerX: am5.p50
+        }));
         yAxisLatency.children.unshift(am5.Label.new(gRoot, {
             text: "Latency",
             rotation: -90,
@@ -120,23 +135,25 @@
 
         const latencySeries = gChart.series.push(
             am5xy.LineSeries.new(gRoot,{
-                xAxis:xAxis,
-                yAxis:yAxisLatency,
-                valueXField:"x", 
-                valueYField:"y",
-                stroke:am5.color(0x006cff),
-                strokeWidth:2
+                name: "Latency",
+                xAxis: xAxis,
+                yAxis: yAxisLatency,
+                valueXField: "date", 
+                valueYField: "value",
+                stroke: am5.color(0x006cff),
+                strokeWidth: 2
             })
         );
         
         const volumeSeries = gChart.series.push(
             am5xy.LineSeries.new(gRoot,{
-                xAxis:xAxis,
-                yAxis:yAxisVolume,
-                valueXField:"x", 
-                valueYField:"y",
-                stroke:am5.color(0xff6600),
-                strokeWidth:2
+                name: "Volume",
+                xAxis: xAxis,
+                yAxis: yAxisVolume,
+                valueXField: "date", 
+                valueYField: "value",
+                stroke: am5.color(0xff6600),
+                strokeWidth: 2
             })
         );
         
@@ -172,8 +189,17 @@
 
         /* helper to load graph data */
         function updateGraph(title, latencies, volume){
-            const latencyData = latencies.map(([y,x])=>({x,y}));
-            const volumeData = volume.map(([y,x])=>({x,y}));
+            // Update the graph title
+            document.getElementById('graph-title').textContent = title;
+            
+            const latencyData = latencies.map(([value, timestamp]) => ({
+                date: timestamp * 1000,
+                value: value
+            }));
+            const volumeData = volume.map(([value, timestamp]) => ({
+                date: timestamp * 1000,
+                value: value
+            }));
             latencySeries.data.setAll(latencyData);
             volumeSeries.data.setAll(volumeData);
         }
