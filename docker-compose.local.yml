@@ -1,0 +1,31 @@
+services:
+  db:
+    restart: "no"
+    ports:
+      - "5432:5432"
+    env_file:
+      - .env-local
+
+  prestart:
+    env_file:
+      - .env-local
+
+  backend:
+    restart: "no"
+    ports:
+      - "8000:8000"
+    # command: sleep infinity  # Infinite loop to keep container alive doing nothing
+    command:
+      - fastapi
+      - run
+      - --reload
+      - "src/main.py"
+    develop:
+      watch:
+        - path: ./src
+          action: sync
+          target: /app/src
+        - path: ./pyproject.toml
+          action: rebuild
+    env_file:
+      - .env-local
