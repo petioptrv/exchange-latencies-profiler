@@ -26,3 +26,6 @@ alembic-generate-migration-dev:
 alembic-upgrade-head-dev:
 	export $$(grep -v '^#' .env-dev | xargs) && alembic upgrade head
 
+run-prestart:
+	export $$(grep -v '^#' .env-dev | xargs) && \
+	PYTHONPATH=$(ROOT_DIR) ./scripts/prestart.sh

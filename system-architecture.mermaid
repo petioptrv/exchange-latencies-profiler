@@ -1,0 +1,35 @@
+flowchart LR
+subgraph Tokyo["ap-northeast-1 Tokyo - Binance"]
+direction TB
+BIN_WS[(Binance Trades WS/FIX)]
+C_Tokyo[Collector EC2 Python]
+P_Tokyo[Trade listeners x10 - one process per connection - timestamp on receipt]
+P_Tokyo --> BIN_WS
+P_Tokyo -->|raw trade + recv_ts| C_Tokyo
+end
+
+subgraph Singapore["ap-southeast-1 Singapore - Bybit"]
+direction TB
+BYB_WS[(Bybit Trades WS/FIX)]
+C_SG[Collector EC2 Python]
+P_SG[Trade listeners x10 - one process per connection - timestamp on receipt]
+P_SG --> BYB_WS
+P_SG -->|raw trade + recv_ts| C_SG
+end
+
+subgraph Core["Core EC2 (same VPC)"]
+direction TB
+API[FastAPI Service - /ingest /metrics /query]
+PG[(PostgreSQL - raw_trades, hourly_stats)]
+AGG[Aggregator Worker/Scheduler - hourly rollups - min/avg latency and volume]
+API <--> PG
+AGG <--> PG
+end
+
+C_Tokyo -->|HTTPS ingest JSON or NDJSON| API
+C_SG -->|HTTPS ingest JSON or NDJSON| API
+
+subgraph Frontend["Website"]
+UI[Graphs & Dashboards - latency min/avg, volume]
+end
+UI -->|REST JSON| API

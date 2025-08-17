@@ -1,0 +1,19 @@
+sequenceDiagram
+    autonumber
+    participant EX as Exchange (WS/FIX)
+    participant L as Listener Proc (one of ×10)
+    participant COL as Collector EC2
+    participant API as FastAPI (/ingest)
+    participant DB as Postgres
+
+    EX->>L: Trade message
+    Note over L: On receipt: record recv_ts_mono = clock_gettime(CLOCK_MONOTONIC_RAW)<br/>and recv_ts_wall = time.time()/now()
+    L->>COL: { trade, recv_ts_mono, recv_ts_wall, conn_id, region, exchange, symbol }
+    COL->>API: POST /ingest (batched or streaming)
+    API->>DB: INSERT raw_trades
+    API-->>COL: 200 OK
+
+    rect rgba(200,200,200,.18)
+        Note over API,DB: Periodic aggregation (e.g., every minute/hour)
+        API->>DB: INSERT/UPSERT hourly_stats = GROUP BY bucket(exchange, symbol, hour)<br/>• min(latency_ms), avg(latency_ms), sum(volume), count(trades)
+    end

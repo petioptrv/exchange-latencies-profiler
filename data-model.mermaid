@@ -1,0 +1,49 @@
+erDiagram
+    EXCHANGES ||--o{ INSTANCES : hosts
+    REGIONS ||--o{ INSTANCES : contains
+    INSTANCES ||--o{ CONNECTIONS : runs
+    CONNECTIONS ||--o{ RAW_TRADES : produces
+    RAW_TRADES }o--|| HOURLY_STATS : rolls_up_to
+
+    EXCHANGES {
+        text name PK
+    }
+    REGIONS {
+        text name PK
+    }
+    INSTANCES {
+        text instance_id PK
+        text region FK
+        text exchange FK
+        timestamptz started_at
+    }
+    CONNECTIONS {
+        text conn_id PK
+        text instance_id FK
+        text exchange FK
+        text symbol
+        timestamptz started_at
+    }
+    RAW_TRADES {
+        bigserial id PK
+        text exchange
+        text symbol
+        text region
+        text instance_id
+        text conn_id
+        timestamptz recv_ts_wall   "wall-clock at listener"
+        double recv_ts_mono        "monotonic at listener"
+        double latency_ms          "derived if you have server_ts"
+        numeric price
+        numeric qty
+        jsonb raw                  "original payload"
+    }
+    HOURLY_STATS {
+        timestamptz bucket_start PK
+        text exchange PK
+        text symbol PK
+        double min_latency_ms
+        double avg_latency_ms
+        bigint trades
+        numeric volume
+    }

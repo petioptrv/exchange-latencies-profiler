@@ -23,6 +23,18 @@ class Settings(BaseSettings):
     POSTGRES_PASSWORD: str = ""
     POSTGRES_DB: str = ""
 
+    # Profiler
+    SYMBOL: str
+
+    CLOUD_PROVIDER: str
+    CLOUD_REGION_ID: str
+    CLOUD_LOCATION: str
+
+    EXCHANGE_NAME: str
+    EXCHANGE_SERVER_LOCATION: str
+
+    STREAMERS_COUNT: int
+
     @computed_field  # type: ignore[prop-decorator]
     @property
     def SQLALCHEMY_DATABASE_URI(self) -> PostgresDsn:
