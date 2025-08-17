@@ -10,4 +10,4 @@ python src/pre_start.py
 alembic upgrade head
 
 # Create initial data in DB
-python src/initial_data.py
+PYTHONPATH=./:$PYTHONPATH python src/initial_data.py
