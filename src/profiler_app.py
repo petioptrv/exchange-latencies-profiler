@@ -7,7 +7,7 @@ from src.data import ProfilerInstanceSpec
 from src.db.crud import get_cloud_instance, get_exchange_instance
 from src.db.db import engine
 from src.db.db_cleaner import DBCleaner, DBCleanerPassthrough
-from src.logging_config import setup_logging
+from src.logging_utils import setup_logging
 from src.profiler import Profiler
 
 

@@ -4,7 +4,7 @@ from src.config import settings
 from src.constants import BACKEND_ROOT_PATH
 
 
-def initialize_logging():
+def setup_logging():
     log_dir = BACKEND_ROOT_PATH / "logs"
     log_dir.mkdir(exist_ok=True)
 

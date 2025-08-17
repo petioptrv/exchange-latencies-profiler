@@ -3,7 +3,7 @@ import logging
 from sqlmodel import Session
 
 from src.db.db import engine, init_db
-from src.logging_config import setup_logging
+from src.logging_utils import setup_logging
 
 setup_logging()
 

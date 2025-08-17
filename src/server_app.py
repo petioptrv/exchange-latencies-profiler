@@ -3,7 +3,7 @@ from fastapi import FastAPI
 
 from src.api.main import api_router
 from src.config import settings
-from src.logging_config import setup_logging
+from src.logging_utils import setup_logging
 
 setup_logging()
 
