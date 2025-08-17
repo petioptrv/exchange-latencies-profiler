@@ -1,0 +1,30 @@
+[Unit]
+Description=Exchange Latencies Profiler
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/home/ubuntu/exchange-latencies-profiler
+
+# Explicit interpreter from venv
+ExecStart=/home/ubuntu/exchange-latencies-profiler/venv/bin/python /home/ubuntu/exchange-latencies-profiler/src/profiler_app.py
+
+# If your app needs PYTHONPATH, set it literally (no $ expansion)
+Environment=PYTHONPATH=/home/ubuntu/exchange-latencies-profiler
+
+# Optional: keep PATH clean (not required if ExecStart uses abs path)
+Environment=PATH=/home/ubuntu/exchange-latencies-profiler/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin
+
+Restart=always
+RestartSec=5
+# Useful for graceful shutdowns
+TimeoutStopSec=20
+KillSignal=SIGINT
+
+# Log to journald (default), but make it explicit:
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
