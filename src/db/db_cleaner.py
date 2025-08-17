@@ -6,6 +6,7 @@ from sqlmodel import Session
 
 from src.data import ProfilerInstanceSpec
 from src.db.crud import delete_old_historical_minute_trade_latencies
+from src.db.db import engine
 
 
 class DBCleaner(Thread):
@@ -34,11 +35,15 @@ class DBCleaner(Thread):
                     self._logger.error(f"Error during database cleanup: {e}")
 
     def _clean_historical_data(self):
-        engine = self._instance_spec.engine
         cutoff_date = datetime.now(timezone.utc) - timedelta(days=8)  # One week + one day
 
         with Session(engine) as session:
-            delete_old_historical_minute_trade_latencies(session=session, cutoff_date=cutoff_date)
+            delete_old_historical_minute_trade_latencies(
+                session=session,
+                cutoff_date=cutoff_date,
+                cloud_instance_id=self._instance_spec.cloud_instance_id,
+                exchange_id=self._instance_spec.exchange_id,
+            )
 
         self._logger.info(f"Deleted historical entries older than {cutoff_date}")
 

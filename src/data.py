@@ -1,7 +1,5 @@
 from pydantic import BaseModel
 
-from src.db.model import CloudInstance, Exchange
-
 
 class TradeReceipt(BaseModel):
     id: str
@@ -12,5 +10,5 @@ class TradeReceipt(BaseModel):
 
 class ProfilerInstanceSpec(BaseModel):
     symbol: str
-    cloud_instance: CloudInstance
-    exchange: Exchange
+    cloud_instance_id: int
+    exchange_id: int

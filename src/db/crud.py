@@ -74,9 +74,13 @@ def delete_old_historical_minute_trade_latencies(
     *,
     session: Session,
     cutoff_date: datetime,
+    cloud_instance_id: int,
+    exchange_id: int,
 ):
     delete_stmt = delete(HistoricalMinuteTradeLatenciesEntry).where(
-        HistoricalMinuteTradeLatenciesEntry.timestamp < cutoff_date
+        HistoricalMinuteTradeLatenciesEntry.timestamp < cutoff_date,
+        HistoricalMinuteTradeLatenciesEntry.cloud_instance_id == cloud_instance_id,
+        HistoricalMinuteTradeLatenciesEntry.exchange_id == exchange_id,
     )
     session.exec(delete_stmt)
     session.commit()

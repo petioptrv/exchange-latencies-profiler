@@ -22,16 +22,18 @@ def main():
             location=settings.CLOUD_LOCATION,
             create_if_not_exist=True,
         )
+        cloud_instance_id = cloud_instance.id
         exchange_instance = get_exchange_instance(
             session=session,
             name=settings.EXCHANGE_NAME,
             server_location=settings.EXCHANGE_SERVER_LOCATION,
             create_if_not_exist=True,
         )
+        exchange_instance_id = exchange_instance.id
     instance_spec = ProfilerInstanceSpec(
         symbol=settings.SYMBOL,
-        cloud_instance=cloud_instance,
-        exchange=exchange_instance,
+        cloud_instance_id=cloud_instance_id,
+        exchange_id=exchange_instance_id,
     )
     if settings.RUN_DB_CLEANER:
         db_cleaner = DBCleaner(instance_spec=instance_spec)

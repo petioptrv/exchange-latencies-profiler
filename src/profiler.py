@@ -93,8 +93,8 @@ class Profiler:
             for event in self._aggregation_events:
                 update = HistoricalMinuteTradeLatenciesEntry(
                     session=session,
-                    cloud_instance_id=self._instance_spec.cloud_instance.id,
-                    exchange_id=self._instance_spec.exchange.id,
+                    cloud_instance_id=self._instance_spec.cloud_instance_id,
+                    exchange_id=self._instance_spec.exchange_id,
                     timestamp=datetime.fromtimestamp(event.timestamp, tz=timezone.utc),
                     average_trade_latency=event.average_trade_latency,
                     min_trade_latency=event.min_trade_latency,
