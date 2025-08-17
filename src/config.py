@@ -5,13 +5,12 @@ from pydantic import PostgresDsn, model_validator, computed_field
 from pydantic_core import MultiHostUrl
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from src.constants import BACKEND_ROOT_PATH
+from src.constants import PROJECT_ROOT
 
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        # Use top level .env file (one level above ./backend/)
-        env_file=BACKEND_ROOT_PATH / ".." / ".env",
+        env_file=PROJECT_ROOT / ".env",
         env_ignore_empty=True,
         extra="ignore",
     )
