@@ -24,7 +24,6 @@ class TimeSynchronizer(Thread):
         self._rest_client = rest_client
         self._server_time_provider = server_time_provider
         self._time_offset_ms_queue: Deque[float] = deque(maxlen=CLOCK_SYNC_SAMPLES)
-        self._time_offset_ms = -1
         self._stopped = False
 
     @property
@@ -65,4 +64,5 @@ class TimeSynchronizer(Thread):
         weighted_average = numpy.average(
             self._time_offset_ms_queue, weights=range(1, len(self._time_offset_ms_queue) * 2 + 1, 2)
         )
-        self._time_offset_ms = numpy.mean([median, weighted_average])
+        time_offset_ms = numpy.mean([median, weighted_average])
+        self._server_time_provider.set_server_time_offset_ms(server_time_offset_ms=round(time_offset_ms))
