@@ -45,3 +45,11 @@ class DBCleaner(Thread):
     def stop(self):
         self._logger.info("Stopping DB Cleaner thread")
         self._stop_event.set()
+
+
+class DBCleanerPassthrough(DBCleaner):
+    def run(self):
+        pass
+
+    def stop(self):
+        pass

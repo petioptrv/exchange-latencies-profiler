@@ -26,6 +26,7 @@ class Profiler:
         rest_client: RESTClientBase,
         threaded_trades_streamer_class: Type[ThreadedTradesStreamerBase],
         trades_streamers_count: int,
+        db_cleaner: DBCleaner,
         streamer_kwargs: Optional[Dict] = None,
         streamer_threads_kwargs: Optional[Dict] = None,
     ):
@@ -47,7 +48,7 @@ class Profiler:
                 thread_kwargs=streamer_threads_kwargs,
             ) for _ in range(trades_streamers_count)
         ]
-        self._db_cleaner = DBCleaner(instance_spec=self._instance_spec)
+        self._db_cleaner = db_cleaner
 
         self._aggregation_events: List[MinuteTradesAggregation] = []
         self._last_db_update_minute = 0

@@ -35,6 +35,8 @@ class Settings(BaseSettings):
 
     STREAMERS_COUNT: int
 
+    RUN_DB_CLEANER: bool = False
+
     LOGGING_LEVEL: str = "INFO"
 
     @computed_field  # type: ignore[prop-decorator]
