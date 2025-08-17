@@ -1,5 +1,8 @@
+from datetime import datetime
+
+from sqlalchemy import delete
 from sqlmodel import Session, select
-from src.db.model import CloudInstances, Exchanges
+from src.db.model import CloudInstance, Exchange, HistoricalMinuteTradeLatenciesEntry
 
 
 def get_cloud_instance(
@@ -9,17 +12,17 @@ def get_cloud_instance(
     region_id: str,
     location: str,
     create_if_not_exist: bool = False,
-) -> CloudInstances:
-    statement = select(CloudInstances).where(
-        CloudInstances.provider == provider,
-        CloudInstances.region_id == region_id,
-        CloudInstances.location == location,
+) -> CloudInstance:
+    statement = select(CloudInstance).where(
+        CloudInstance.provider == provider,
+        CloudInstance.region_id == region_id,
+        CloudInstance.location == location,
     )
     instance = session.exec(statement).first()
 
     if instance is None:
         if create_if_not_exist:
-            instance = CloudInstances(
+            instance = CloudInstance(
                 provider=provider,
                 region_id=region_id,
                 location=location,
@@ -42,16 +45,16 @@ def get_exchange_instance(
     name: str,
     server_location: str,
     create_if_not_exist: bool = False,
-) -> Exchanges:
-    statement = select(Exchanges).where(
-        Exchanges.name == name,
-        Exchanges.server_location == server_location,
+) -> Exchange:
+    statement = select(Exchange).where(
+        Exchange.name == name,
+        Exchange.server_location == server_location,
     )
     instance = session.exec(statement).first()
 
     if instance is None:
         if create_if_not_exist:
-            instance = Exchanges(
+            instance = Exchange(
                 name=name,
                 server_location=server_location,
             )
@@ -65,3 +68,15 @@ def get_exchange_instance(
             )
 
     return instance
+
+
+def delete_old_historical_minute_trade_latencies(
+    *,
+    session: Session,
+    cutoff_date: datetime,
+):
+    delete_stmt = delete(HistoricalMinuteTradeLatenciesEntry).where(
+        HistoricalMinuteTradeLatenciesEntry.timestamp < cutoff_date
+    )
+    session.exec(delete_stmt)
+    session.commit()

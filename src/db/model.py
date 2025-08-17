@@ -5,7 +5,7 @@ from sqlalchemy import DateTime, Float
 from sqlmodel import SQLModel, Field, String, Column
 
 
-class CloudInstances(SQLModel, table=True):
+class CloudInstance(SQLModel, table=True):
     __tablename__ = "cloud_instances"
 
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -14,13 +14,15 @@ class CloudInstances(SQLModel, table=True):
     location: str = Field(sa_column=Column(String(20), nullable=False))
 
 
-class Exchanges(SQLModel, table=True):
+class Exchange(SQLModel, table=True):
+    __tablename__ = "exchanges"
+
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str = Field(sa_column=Column(String(20), nullable=False))
     server_location: str = Field(sa_column=Column(String(20), nullable=False))
 
 
-class HistoricalMinuteTradeLatencies(SQLModel, table=True):
+class HistoricalMinuteTradeLatenciesEntry(SQLModel, table=True):
     __tablename__ = "historical_minute_trade_latencies"
 
     id: Optional[int] = Field(default=None, primary_key=True, index=True)

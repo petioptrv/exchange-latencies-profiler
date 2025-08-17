@@ -3,6 +3,7 @@ from sqlmodel import Session
 from src.clients.rest_clients.binance_rest_client import BinanceRESTClient
 from src.clients.ws_clients.binance_ws_client import BinanceWSClient
 from src.config import settings
+from src.data import ProfilerInstanceSpec
 from src.db.crud import get_cloud_instance, get_exchange_instance
 from src.db.db import engine
 from src.logging_config import setup_logging
@@ -26,10 +27,13 @@ def main():
             server_location=settings.EXCHANGE_SERVER_LOCATION,
             create_if_not_exist=True,
         )
-    profiler = Profiler(
+    instance_spec = ProfilerInstanceSpec(
         symbol=settings.SYMBOL,
-        cloud_instance_id=cloud_instance.id,
-        exchange_id=exchange_instance.id,
+        cloud_instance=cloud_instance,
+        exchange=exchange_instance,
+    )
+    profiler = Profiler(
+        instance_spec=instance_spec,
         rest_client=BinanceRESTClient(),
         threaded_trades_streamer_class=BinanceWSClient,
         trades_streamers_count=settings.STREAMERS_COUNT,

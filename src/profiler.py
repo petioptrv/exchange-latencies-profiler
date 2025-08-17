@@ -7,8 +7,10 @@ from sqlmodel import Session
 
 from src.clients.rest_clients.rest_client_base import RESTClientBase
 from src.clients.threaded_streamer_base import ThreadedTradesStreamerBase
+from src.data import ProfilerInstanceSpec
 from src.db.db import engine
-from src.db.model import HistoricalMinuteTradeLatencies
+from src.db.db_cleaner import DBCleaner
+from src.db.model import HistoricalMinuteTradeLatenciesEntry
 from src.time.server_time_provider import ServerTimeProvider
 from src.time.time_synchronizer import TimeSynchronizer
 from src.time.utils import sleep_for
@@ -20,9 +22,7 @@ logger = logging.getLogger(__name__)
 class Profiler:
     def __init__(
         self,
-        symbol: str,
-        cloud_instance_id: int,
-        exchange_id: int,
+        instance_spec: ProfilerInstanceSpec,
         rest_client: RESTClientBase,
         threaded_trades_streamer_class: Type[ThreadedTradesStreamerBase],
         trades_streamers_count: int,
@@ -30,8 +30,7 @@ class Profiler:
         streamer_threads_kwargs: Optional[Dict] = None,
     ):
 
-        self._cloud_instance_id = cloud_instance_id
-        self._exchange_id = exchange_id
+        self._instance_spec = instance_spec
         self._server_time_provider = ServerTimeProvider()
         self._time_synchronizer = TimeSynchronizer(
             rest_client=rest_client, server_time_provider=self._server_time_provider
@@ -41,13 +40,14 @@ class Profiler:
         self._out_queue = queue.Queue()
         self._threaded_trades_streamers = [
             threaded_trades_streamer_class(
-                symbol=symbol,
+                symbol=self._instance_spec.symbol,
                 out_queue=self._out_queue,
                 server_time_provider=self._server_time_provider,
                 streamer_kwargs=streamer_kwargs,
                 thread_kwargs=streamer_threads_kwargs,
             ) for _ in range(trades_streamers_count)
         ]
+        self._db_cleaner = DBCleaner(instance_spec=self._instance_spec)
 
         self._aggregation_events: List[MinuteTradesAggregation] = []
         self._last_db_update_minute = 0
@@ -61,6 +61,7 @@ class Profiler:
 
         for streamer in self._threaded_trades_streamers:
             streamer.start()
+        self._db_cleaner.start()
 
         try:
             while True:
@@ -71,10 +72,12 @@ class Profiler:
             for streamer in self._threaded_trades_streamers:
                 streamer.stop()
             self._time_synchronizer.stop()
+            self._db_cleaner.stop()
 
             for streamer in self._threaded_trades_streamers:
                 streamer.join()
             self._time_synchronizer.join()
+            self._db_cleaner.join()
 
     def _on_trade_receipt_aggregation_event(self, event: MinuteTradesAggregation):
         self._aggregation_events.append(event)
@@ -87,10 +90,10 @@ class Profiler:
         logger.info(f"Updating db with {len(self._aggregation_events)} aggregation(s).")
         with Session(engine) as session:
             for event in self._aggregation_events:
-                update = HistoricalMinuteTradeLatencies(
+                update = HistoricalMinuteTradeLatenciesEntry(
                     session=session,
-                    cloud_instance_id=self._cloud_instance_id,
-                    exchange_id=self._exchange_id,
+                    cloud_instance_id=self._instance_spec.cloud_instance.id,
+                    exchange_id=self._instance_spec.exchange.id,
                     timestamp=datetime.fromtimestamp(event.timestamp, tz=timezone.utc),
                     average_trade_latency=event.average_trade_latency,
                     min_trade_latency=event.min_trade_latency,

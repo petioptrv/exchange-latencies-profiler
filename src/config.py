@@ -35,6 +35,8 @@ class Settings(BaseSettings):
 
     STREAMERS_COUNT: int
 
+    LOGGING_LEVEL: str = "INFO"
+
     @computed_field  # type: ignore[prop-decorator]
     @property
     def SQLALCHEMY_DATABASE_URI(self) -> PostgresDsn:
