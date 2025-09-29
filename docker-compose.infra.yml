@@ -1,0 +1,19 @@
+services:
+  db:
+    restart: "no"
+    ports:
+      - "5432:5432"
+    env_file:
+      - .env
+
+  prestart:
+    image: '${DOCKER_IMAGE?Variable not set}:${TAG:-latest}'
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy
+    command: bash scripts/prestart.sh
+    env_file:
+      - .env
