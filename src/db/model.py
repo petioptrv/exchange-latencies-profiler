@@ -12,6 +12,8 @@ class CloudInstance(SQLModel, table=True):
     provider: str = Field(sa_column=Column(String(20), nullable=False))
     region_id: str = Field(sa_column=Column(String(20), nullable=False))
     location: str = Field(sa_column=Column(String(20), nullable=False))
+    longitude: float = Field(sa_column=Column(Float, nullable=False))
+    latitude: float = Field(sa_column=Column(Float, nullable=False))
 
 
 class Exchange(SQLModel, table=True):

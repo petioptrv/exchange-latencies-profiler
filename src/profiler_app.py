@@ -20,6 +20,8 @@ def main():
             provider=settings.CLOUD_PROVIDER,
             region_id=settings.CLOUD_REGION_ID,
             location=settings.CLOUD_LOCATION,
+            longitude=settings.CLOUD_LOCATION_LONGITUDE,
+            latitude=settings.CLOUD_LOCATION_LATITUDE,
             create_if_not_exist=True,
         )
         cloud_instance_id = cloud_instance.id

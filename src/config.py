@@ -28,6 +28,8 @@ class Settings(BaseSettings):
     CLOUD_PROVIDER: str
     CLOUD_REGION_ID: str
     CLOUD_LOCATION: str
+    CLOUD_LOCATION_LONGITUDE: float
+    CLOUD_LOCATION_LATITUDE: float
 
     EXCHANGE_NAME: str
     EXCHANGE_SERVER_LOCATION: str

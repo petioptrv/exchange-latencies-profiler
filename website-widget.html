@@ -36,18 +36,15 @@
 <script>
     /* ---------- 1. DATA ---------- */
     const raw = [
-        { title:"JFK (New York)", coords:[-73.778137, 40.641312],
-            category:"North America", latency:"17 ms",
+        { location:"JFK (New York)", coords:[-73.778137, 40.641312], latestLatency: 0,
             latencies:[[0, 1754118650.338193], [1, 1754122250.338193], [2, 1754225850.338193]],
             volume:[[1000, 1754118650.338193], [2000, 1754122250.338193], [1500, 1754225850.338193]]
         },
-        { title:"LHR (London)",   coords:[-0.454296, 51.470020],
-            category:"Europe", latency:"23 ms",
+        { location:"LHR (London)",   coords:[-0.454296, 51.470020], latestLatency: 1,
             latencies:[[1, 1754118650.338193], [2, 1754122250.338193], [2, 1754225850.338193]],
             volume:[[1200, 1754118650.338193], [1500, 1754122250.338193], [1500, 1754225850.338193]]
         },
-        { title:"PEK (Beijing)",  coords:[116.597504, 40.072498],
-            category:"Asia", latency:"44 ms",
+        { location:"PEK (Beijing)",  coords:[116.597504, 40.072498], latestLatency: 2,
             latencies:[[2, 1754118650.338193], [3, 1754122250.338193], [2, 1754225850.338193]],
             volume:[[1000, 1754118650.338193], [1000, 1754122250.338193], [1200, 1754225850.338193]]
         }
@@ -188,9 +185,9 @@
         });
 
         /* helper to load graph data */
-        function updateGraph(title, latencies, volume){
+        function updateGraph(location, latencies, volume){
             // Update the graph title
-            document.getElementById('graph-title').textContent = title;
+            document.getElementById('graph-title').textContent = location;
             
             const latencyData = latencies.map(([value, timestamp]) => ({
                 date: timestamp * 1000,
@@ -203,7 +200,7 @@
             latencySeries.data.setAll(latencyData);
             volumeSeries.data.setAll(volumeData);
         }
-        updateGraph(points[0].title, points[0].latencies, points[0].volume);   // initial graph
+        updateGraph(points[0].location, points[0].latencies, points[0].volume);   // initial graph
 
         const pointSeries = chart.series.push(am5map.MapPointSeries.new(mapRoot,{}));
 
@@ -211,7 +208,7 @@
             const sprite = am5.Circle.new(root,{
                 radius:5, fill:am5.color(0x006cff),
                 stroke:am5.color(0xffffff), strokeWidth:1,
-                tooltipText:"{title}\nLatency: {latency}"
+                tooltipText:"{location}\nLatency: {latestLatency}"
             });
 
             /* click → update graph */
@@ -224,23 +221,13 @@
                 const bulletIndex = dataItems.indexOf(ev.target.dataItem);
                 
                 const pointData = seriesData[bulletIndex];
-                updateGraph(pointData.title, pointData.latencies, pointData.volume);
+                updateGraph(pointData.location, pointData.latencies, pointData.volume);
             });
 
             return am5.Bullet.new(root,{sprite});
         });
 
         pointSeries.data.setAll(points);
-
-        /* ----- Filter menu ----- */
-        const menu = document.getElementById("menu");
-        [...new Set(points.map(p=>p.category))].sort().forEach(cat=>{
-            const o=document.createElement("option"); o.value=cat;o.textContent=cat;menu.appendChild(o);
-        });
-        menu.addEventListener("change",()=>{
-            const sel=menu.value;
-            pointSeries.data.setAll(sel==="all"?points:points.filter(p=>p.category===sel));
-        });
     });
 </script>
 </body>

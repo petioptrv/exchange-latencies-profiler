@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import delete
+from sqlalchemy import delete, Sequence
 from sqlmodel import Session, select
 from src.db.model import CloudInstance, Exchange, HistoricalMinuteTradeLatenciesEntry
 
@@ -11,6 +11,8 @@ def get_cloud_instance(
     provider: str,
     region_id: str,
     location: str,
+    longitude: float,
+    latitude: float,
     create_if_not_exist: bool = False,
 ) -> CloudInstance:
     statement = select(CloudInstance).where(
@@ -26,6 +28,8 @@ def get_cloud_instance(
                 provider=provider,
                 region_id=region_id,
                 location=location,
+                longitude=longitude,
+                latitude=latitude,
             )
             session.add(instance)
             session.commit()
@@ -68,6 +72,17 @@ def get_exchange_instance(
             )
 
     return instance
+
+
+def get_all_historical_minute_trade_latencies(
+    *, session: Session
+) -> Sequence[HistoricalMinuteTradeLatenciesEntry]:
+    statement = (
+        select(HistoricalMinuteTradeLatenciesEntry)
+        .order_by(HistoricalMinuteTradeLatenciesEntry.timestamp)
+    )
+    results = session.exec(statement).all()
+    return results
 
 
 def delete_old_historical_minute_trade_latencies(

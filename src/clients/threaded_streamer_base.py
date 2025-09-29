@@ -29,11 +29,11 @@ class ThreadedTradesStreamerBase(Thread, ABC):
     def stop(self):
         ...
 
-    def stream_receipt(self, trade_id: str, event_ts: float, volume: float):
+    def stream_receipt(self, trade_id: str, event_ts: float, volume_in_quote: float):
         receipt = TradeReceipt(
             id=trade_id,
             timestamp=event_ts,
             latency=self._server_time_provider.server_time - event_ts,
-            volume=volume,
+            volume_in_quote=volume_in_quote,
         )
         self._out_queue.put_nowait(item=receipt)
