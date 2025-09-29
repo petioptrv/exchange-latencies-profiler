@@ -99,7 +99,7 @@ class Profiler:
                     average_trade_latency=event.average_trade_latency,
                     min_trade_latency=event.min_trade_latency,
                     max_trade_latency=event.max_trade_latency,
-                    total_trade_volume=event.total_trade_volume_in_quote,
+                    total_trade_volume_in_quote=event.total_trade_volume_in_quote,
                 )
                 session.add(update)
             session.commit()
