@@ -45,8 +45,8 @@ class WSClientBase(ThreadedTradesStreamerBase, ABC):
         ...
 
     def on_message(self, ws, msg):
-        trade_id, event_ts, volume = self._process_message(message=msg)
-        self.stream_receipt(trade_id=trade_id, event_ts=event_ts, volume=volume)
+        trade_id, event_ts, volume_in_quote = self._process_message(message=msg)
+        self.stream_receipt(trade_id=trade_id, event_ts=event_ts, volume_in_quote=volume_in_quote)
 
     def on_error(self, ws, err):
         logger.error(err)

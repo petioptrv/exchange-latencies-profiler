@@ -21,7 +21,7 @@ class TradeReceiptsAggregator:
             lambda: TradeAggregation(expected_trade_receipts=self._n_clients, started_ts=get_utc_ts())
         )
         self._current_minute_trade_latencies: List[float] = []
-        self._current_minute_volume: float = 0
+        self._current_minute_volume_in_quote: float = 0
         self._last_aggregation_minute = self._get_current_minute_since_epoch()
 
     def add_trade_receipt(self, trade_receipt: TradeReceipt):
@@ -39,7 +39,7 @@ class TradeReceiptsAggregator:
     def _process_and_pop_trade_aggregation(self, trade_id: str):
         trade_aggregation = self._in_flight_trade_aggregations.pop(trade_id)
         self._current_minute_trade_latencies.append(trade_aggregation.min_latency)
-        self._current_minute_volume += trade_aggregation.volume
+        self._current_minute_volume_in_quote += trade_aggregation.volume_in_quote
 
     def _issue_aggregation(self):
         if len(self._current_minute_trade_latencies) != 0:
@@ -49,17 +49,17 @@ class TradeReceiptsAggregator:
                 average_trade_latency=sum(self._current_minute_trade_latencies) / len(self._current_minute_trade_latencies),
                 min_trade_latency=min(self._current_minute_trade_latencies),
                 max_trade_latency=max(self._current_minute_trade_latencies),
-                total_trade_volume=self._current_minute_volume,
+                total_trade_volume_in_quote=self._current_minute_volume_in_quote,
             )
             self.aggregation_event.emit(aggregation)
 
     def _reset_aggregation(self):
         self._current_minute_trade_latencies.clear()
-        self._current_minute_volume: float = 0
+        self._current_minute_volume_in_quote: float = 0
 
     def _clean_pending_trades(self):
         current_ts = get_utc_ts()
-        for trade_id, pending_trade in self._in_flight_trade_aggregations.items():
+        for trade_id, pending_trade in list(self._in_flight_trade_aggregations.items()):
             if pending_trade.started_ts < current_ts - 60:
                 logger.warning(f"Trade {trade_id} never received confirmation from all clients.")
                 self._in_flight_trade_aggregations.pop(trade_id)
@@ -78,7 +78,7 @@ class TradeAggregation(BaseModel):
     expected_trade_receipts: int
     logged_trade_receipts: int = 0
     min_latency: float = sys.maxsize
-    volume: float = 0
+    volume_in_quote: float = 0
 
     @property
     def done(self) -> bool:
@@ -86,7 +86,7 @@ class TradeAggregation(BaseModel):
 
     def log_trade_receipt(self, trade_receipt: TradeReceipt):
         self.logged_trade_receipts += 1
-        self.volume = trade_receipt.volume
+        self.volume_in_quote = trade_receipt.volume_in_quote
         if self.logged_trade_receipts > self.expected_trade_receipts:
             raise RuntimeError("Received more trade confirmations that there are clients.")
         self.min_latency = min(self.min_latency, trade_receipt.latency)
@@ -97,4 +97,4 @@ class MinuteTradesAggregation(BaseModel):
     average_trade_latency: float
     min_trade_latency: float
     max_trade_latency: float
-    total_trade_volume: float
+    total_trade_volume_in_quote: float

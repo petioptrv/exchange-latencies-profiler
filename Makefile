@@ -26,6 +26,11 @@ alembic-generate-migration-dev:
 alembic-upgrade-head-dev:
 	export $$(grep -v '^#' .env-dev | xargs) && alembic upgrade head
 
+alembic-revert-last-dev:
+	export $$(grep -v '^#' .env-dev | xargs) && \
+	alembic downgrade -1 && \
+	rm -f $$(ls -t migrations/versions/*.py | head -n1)
+
 run-prestart:
 	export $$(grep -v '^#' .env-dev | xargs) && \
 	PYTHONPATH=$(ROOT_DIR) ./scripts/prestart.sh

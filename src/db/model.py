@@ -32,4 +32,4 @@ class HistoricalMinuteTradeLatenciesEntry(SQLModel, table=True):
     average_trade_latency: float = Field(sa_column=Column(Float, nullable=False))
     min_trade_latency: float = Field(sa_column=Column(Float, nullable=False))
     max_trade_latency: float = Field(sa_column=Column(Float, nullable=False))
-    total_trade_volume: float = Field(sa_column=Column(Float, nullable=False))
+    total_trade_volume_in_quote: float = Field(sa_column=Column(Float, nullable=False))

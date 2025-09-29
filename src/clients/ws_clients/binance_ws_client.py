@@ -16,5 +16,5 @@ class BinanceWSClient(WSClientBase):
         data = json.loads(message)
         trade_id = str(data["t"])
         event_ts = data["E"] * 1e-3
-        volume = float(data["q"])
-        return trade_id, event_ts, volume
+        volume_in_quote = float(data["q"]) * float(data["p"])
+        return trade_id, event_ts, volume_in_quote

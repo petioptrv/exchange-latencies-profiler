@@ -5,7 +5,7 @@ class TradeReceipt(BaseModel):
     id: str
     timestamp: float
     latency: float
-    volume: float
+    volume_in_quote: float
 
 
 class ProfilerInstanceSpec(BaseModel):
