@@ -9,12 +9,7 @@ services:
       start_period: 30s
       timeout: 10s
     volumes:
-      - app-db-data:/var/lib/postgresql/data/pgdata
-    environment:
-      - PGDATA=/var/lib/postgresql/data/pgdata
-      - POSTGRES_DB=${POSTGRES_DB?Variable not set}
-      - POSTGRES_USER=${POSTGRES_USER?Variable not set}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD?Variable not set}
+      - app-db-data:/var/lib/postgresql/data
 
   prestart:
     image: '${DOCKER_IMAGE?Variable not set}:${TAG-latest}'
@@ -26,8 +21,6 @@ services:
         condition: service_healthy
         restart: true
     command: bash scripts/prestart.sh
-    environment:
-      - POSTGRES_SERVER=db
 
   backend:
     image: '${DOCKER_IMAGE?Variable not set}:${TAG-latest}'
@@ -40,13 +33,6 @@ services:
         restart: true
       prestart:
         condition: service_completed_successfully
-    environment:
-      - ENVIRONMENT=${ENVIRONMENT}
-      - POSTGRES_SERVER=db
-      - POSTGRES_PORT=${POSTGRES_PORT}
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_USER=${POSTGRES_USER?Variable not set}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD?Variable not set}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/utils/health-check/"]
       interval: 10s
