@@ -42,7 +42,7 @@ class BackgroundRefresher:
 
     @staticmethod
     def _build_response_from_db(session: Session) -> List[DataResponse]:
-        minutes_buckets = 30
+        minutes_buckets = 60
         entries: List[HistoricalMinuteTradeLatenciesEntry] = get_all_historical_minute_trade_latencies(session=session)
         if not entries:
             return []
