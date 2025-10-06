@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8" />
+    <meta charset="utf-8"/>
     <title>World Latencies Map</title>
 
     <!-- amCharts v5 -->
@@ -12,18 +12,38 @@
     <script src="https://cdn.amcharts.com/lib/5/themes/Animated.js"></script>
 
     <style>
-        html,body{margin:0;height:100%}
-        #chartdiv {width:100%;height:460px}
-        #graph-title {
-            font:18px/1.2 sans-serif;font-weight:bold;color:#333;
-            padding:8px 12px;margin:0;background:#f8f9fa;
-            border-bottom:1px solid #e9ecef
+        html, body {
+            margin: 0;
+            height: 100%
         }
-        #graphdiv {width:100%;height:260px}                         /* ← NEW */
-        #menu{
-            position:absolute;top:8px;left:8px;z-index:10;
-            background:#fff;font:14px/1 sans-serif;padding:4px 6px;
-            border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,.15)
+
+        #chartdiv {
+            width: 100%;
+            height: 460px
+        }
+
+        #graph-title {
+            font: 18px/1.2 sans-serif;
+            font-weight: bold;
+            color: #333;
+            padding: 8px 12px;
+            margin: 0;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef
+        }
+
+        #correlation-value {
+            font: 14px/1.2 monospace;
+            color: #555;
+            padding: 6px 12px;
+            margin: 0;
+            background: #f9fafb;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        #graphdiv {
+            width: 100%;
+            min-height: 280px;
         }
     </style>
 </head>
@@ -31,60 +51,61 @@
 <!--<select id="menu"><option value="all">Show All</option></select>-->
 <div id="chartdiv"></div>
 <div id="graph-title"></div>
+<div id="correlation-value"></div>
 <div id="graphdiv"></div>                                      <!-- ← NEW -->
 
 <script>
     /* ---------- 1. DATA ---------- */
-    const raw = [
-        { location:"JFK (New York)", coords:[-73.778137, 40.641312], latestLatency: 0,
-            latencies:[[0, 1754118650.338193], [1, 1754122250.338193], [2, 1754225850.338193]],
-            volume:[[1000, 1754118650.338193], [2000, 1754122250.338193], [1500, 1754225850.338193]]
-        },
-        { location:"LHR (London)",   coords:[-0.454296, 51.470020], latestLatency: 1,
-            latencies:[[1, 1754118650.338193], [2, 1754122250.338193], [2, 1754225850.338193]],
-            volume:[[1200, 1754118650.338193], [1500, 1754122250.338193], [1500, 1754225850.338193]]
-        },
-        { location:"PEK (Beijing)",  coords:[116.597504, 40.072498], latestLatency: 2,
-            latencies:[[2, 1754118650.338193], [3, 1754122250.338193], [2, 1754225850.338193]],
-            volume:[[1000, 1754118650.338193], [1000, 1754122250.338193], [1200, 1754225850.338193]]
-        }
-    ];
-    const points = raw.map(p => ({ ...p, geometry:{type:"Point", coordinates:p.coords} }));
+    async function loadPointsFromUrl() {
+        const res = await fetch("http://127.0.0.1:8081/utils/data", {headers: {"Accept": "application/json"}});
+        if (!res.ok) throw new Error(`Failed to load data: ${res.status} ${res.statusText}`);
+        const raw = await res.json();
+        return raw.map(p => ({...p, geometry: {type: "Point", coordinates: p.coords}}));
+    }
 
     /* ---------- 2. MAP ---------- */
-    am5.ready(function(){
+    am5.ready(async function () {
+        let points = [];
+        try {
+            points = await loadPointsFromUrl("/api/latencies"); // ← replace with your endpoint
+        } catch (e) {
+            console.error(e);
+            return;
+        }
 
         /* ----- Map ----- */
         const mapRoot = am5.Root.new("chartdiv");
         mapRoot.setThemes([am5themes_Animated.new(mapRoot)]);
 
         const chart = mapRoot.container.children.push(
-            am5map.MapChart.new(mapRoot,{panX:"none",panY:"none",
-                wheelX:"none",wheelY:"none",projection:am5map.geoEqualEarth()})
+            am5map.MapChart.new(mapRoot, {
+                panX: "none", panY: "none",
+                wheelX: "none", wheelY: "none", projection: am5map.geoEqualEarth()
+            })
         );
 
         const polygonSeries = chart.series.push(
-            am5map.MapPolygonSeries.new(mapRoot,{
-                geoJSON:am5geodata_worldLow, exclude:["AQ"],
-                fill:am5.color(0x6fc5a2), stroke:am5.color(0x4e9477)
+            am5map.MapPolygonSeries.new(mapRoot, {
+                geoJSON: am5geodata_worldLow, exclude: ["AQ"],
+                fill: am5.color(0x6fc5a2), stroke: am5.color(0x4e9477)
             }));
-        polygonSeries.mapPolygons.template.setAll({strokeOpacity:.6,fillOpacity:.8});
+        polygonSeries.mapPolygons.template.setAll({strokeOpacity: .6, fillOpacity: .8});
 
         /* ---------- 3. GRAPH ---------- */
         const gRoot = am5.Root.new("graphdiv");
         gRoot.setThemes([am5themes_Animated.new(gRoot)]);
 
         const gChart = gRoot.container.children.push(
-            am5xy.XYChart.new(gRoot,{panX:true,panY:true,wheelX:"zoomX",wheelY:"zoomY"})
+            am5xy.XYChart.new(gRoot, {panX: true, panY: true, wheelX: "zoomX", wheelY: "zoomY"})
         );
-        
+
         // Configure faster tooltips
-        gChart.plotContainer.onPrivate("maskRectangle", function() {
+        gChart.plotContainer.onPrivate("maskRectangle", function () {
             gChart.plotContainer.get("maskRectangle").setAll({
                 tooltipDelay: 100
             });
         });
-        
+
         // Set global tooltip animation settings
         gRoot.interfaceColors.set("fill", am5.color(0x000000));
         gChart.set("tooltip", am5.Tooltip.new(gRoot, {
@@ -94,22 +115,22 @@
 
         const xAxis = gChart.xAxes.push(
             am5xy.DateAxis.new(gRoot, {
-                baseInterval: { timeUnit: "hour", count: 1 },
+                baseInterval: {timeUnit: "hour", count: 1},
                 renderer: am5xy.AxisRendererX.new(gRoot, {}),
                 tooltip: am5.Tooltip.new(gRoot, {})
             })
         );
         const yAxisLatency = gChart.yAxes.push(
-            am5xy.ValueAxis.new(gRoot,{renderer:am5xy.AxisRendererY.new(gRoot,{})})
+            am5xy.ValueAxis.new(gRoot, {renderer: am5xy.AxisRendererY.new(gRoot, {})})
         );
         const yAxisVolume = gChart.yAxes.push(
-            am5xy.ValueAxis.new(gRoot,{renderer:am5xy.AxisRendererY.new(gRoot,{opposite:true})})
+            am5xy.ValueAxis.new(gRoot, {renderer: am5xy.AxisRendererY.new(gRoot, {opposite: true})})
         );
-        
+
         // Remove y-axis grid lines
         yAxisLatency.get("renderer").grid.template.setAll({strokeOpacity: 0});
         yAxisVolume.get("renderer").grid.template.setAll({strokeOpacity: 0});
-        
+
         // Add axis labels
         xAxis.children.unshift(am5.Label.new(gRoot, {
             text: "Date",
@@ -131,30 +152,39 @@
         }));
 
         const latencySeries = gChart.series.push(
-            am5xy.LineSeries.new(gRoot,{
+            am5xy.LineSeries.new(gRoot, {
                 name: "Latency",
                 xAxis: xAxis,
                 yAxis: yAxisLatency,
-                valueXField: "date", 
+                valueXField: "date",
                 valueYField: "value",
                 stroke: am5.color(0x006cff),
                 strokeWidth: 2
             })
         );
-        
+
         const volumeSeries = gChart.series.push(
-            am5xy.LineSeries.new(gRoot,{
+            am5xy.LineSeries.new(gRoot, {
                 name: "Volume",
                 xAxis: xAxis,
                 yAxis: yAxisVolume,
-                valueXField: "date", 
+                valueXField: "date",
                 valueYField: "value",
                 stroke: am5.color(0xff6600),
                 strokeWidth: 2
             })
         );
-        
-        latencySeries.bullets.push(function() {
+
+        const legend = gChart.children.unshift(
+            am5.Legend.new(gRoot, {
+                centerX: am5.p50,
+                x: am5.p50,
+                marginBottom: 10
+            })
+        );
+        legend.data.setAll(gChart.series.values);
+
+        latencySeries.bullets.push(function () {
             const bullet = am5.Bullet.new(gRoot, {
                 sprite: am5.Circle.new(gRoot, {
                     radius: 3,
@@ -168,8 +198,8 @@
             }));
             return bullet;
         });
-        
-        volumeSeries.bullets.push(function() {
+
+        volumeSeries.bullets.push(function () {
             const bullet = am5.Bullet.new(gRoot, {
                 sprite: am5.Circle.new(gRoot, {
                     radius: 3,
@@ -185,10 +215,19 @@
         });
 
         /* helper to load graph data */
-        function updateGraph(location, latencies, volume){
+        function updateGraph(location, latencies, volume, correlation) {
             // Update the graph title
             document.getElementById('graph-title').textContent = location;
-            
+
+            const corrElem = document.getElementById('correlation-value');
+            if (correlation !== null && !isNaN(correlation)) {
+                const corr = correlation;
+                const corrColor = corr > 0 ? "#2e7d32" : (corr < 0 ? "#c62828" : "#616161");
+                corrElem.innerHTML = `Correlation (Latency vs Volume): <b style="color:${corrColor}">${corr.toFixed(3)}</b>`;
+            } else {
+                corrElem.textContent = "Correlation unavailable";
+            }
+
             const latencyData = latencies.map(([value, timestamp]) => ({
                 date: timestamp * 1000,
                 value: value
@@ -200,31 +239,34 @@
             latencySeries.data.setAll(latencyData);
             volumeSeries.data.setAll(volumeData);
         }
-        updateGraph(points[0].location, points[0].latencies, points[0].volume);   // initial graph
 
-        const pointSeries = chart.series.push(am5map.MapPointSeries.new(mapRoot,{}));
+        if (points.length) {
+            updateGraph(points[0].location, points[0].latencies, points[0].volume, points[0].correlation);   // initial graph
+        }
 
-        pointSeries.bullets.push((root,dataItem)=>{
-            const sprite = am5.Circle.new(root,{
-                radius:5, fill:am5.color(0x006cff),
-                stroke:am5.color(0xffffff), strokeWidth:1,
-                tooltipText:"{location}\nLatency: {latestLatency}"
+        const pointSeries = chart.series.push(am5map.MapPointSeries.new(mapRoot, {}));
+
+        pointSeries.bullets.push((root, dataItem) => {
+            const sprite = am5.Circle.new(root, {
+                radius: 5, fill: am5.color(0x006cff),
+                stroke: am5.color(0xffffff), strokeWidth: 1,
+                tooltipText: "{location}\nLatency: {latestLatency}"
             });
 
             /* click → update graph */
             sprite.events.on("click", function (ev) {
                 // Get current series data and find the matching point
                 const seriesData = pointSeries.data.values;
-                
+
                 // Try to find by checking the dataItem's position in the series
                 const dataItems = pointSeries.dataItems;
                 const bulletIndex = dataItems.indexOf(ev.target.dataItem);
-                
+
                 const pointData = seriesData[bulletIndex];
                 updateGraph(pointData.location, pointData.latencies, pointData.volume);
             });
 
-            return am5.Bullet.new(root,{sprite});
+            return am5.Bullet.new(root, {sprite});
         });
 
         pointSeries.data.setAll(points);

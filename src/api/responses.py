@@ -1,4 +1,4 @@
-from typing import Tuple, List
+from typing import Tuple, List, Optional
 
 from pydantic import BaseModel
 
@@ -9,3 +9,4 @@ class DataResponse(BaseModel):
     latestLatency: float
     latencies: List[Tuple[float, float]]
     volume: List[Tuple[float, float]]
+    correlation: Optional[float]
