@@ -57,7 +57,7 @@
 <script>
     /* ---------- 1. DATA ---------- */
     async function loadPointsFromUrl() {
-        const res = await fetch("http://127.0.0.1:8081/utils/data", {headers: {"Accept": "application/json"}});
+        const res = await fetch("http://54.64.31.209/utils/data", {headers: {"Accept": "application/json"}});
         if (!res.ok) throw new Error(`Failed to load data: ${res.status} ${res.statusText}`);
         const raw = await res.json();
         return raw.map(p => ({...p, geometry: {type: "Point", coordinates: p.coords}}));
