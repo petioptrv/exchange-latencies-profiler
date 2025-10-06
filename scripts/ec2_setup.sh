@@ -34,4 +34,10 @@ EOF
 pip install --upgrade pip
 pip install -r requirements.txt
 
+sudo apt install -y uvicorn
+
+sudo apt install -y caddy
+sudo bash -c "api.petrov-automations.com {reverse_proxy 127.0.0.1:8000} >> /etc/caddy/Caddyfile"
+sudo systemctl reload caddy
+
 echo "Python environment setup complete!"
