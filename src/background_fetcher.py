@@ -81,7 +81,7 @@ class BackgroundRefresher:
         response = [
             DataResponse(
                 location=(
-                    f"{settings.EXCHANGE_NAME} exchange ({settings.CLOUD_PROVIDER} {settings.CLOUD_LOCATION} client)"
+                    f"{settings.EXCHANGE_NAME} exchange | {settings.CLOUD_PROVIDER} {settings.CLOUD_LOCATION} client"
                 ),
                 coords=(settings.CLOUD_LOCATION_LATITUDE, settings.CLOUD_LOCATION_LONGITUDE),
                 latestLatency=latest_entry.average_trade_latency * 1e3,
