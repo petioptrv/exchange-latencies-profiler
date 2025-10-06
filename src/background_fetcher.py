@@ -1,7 +1,7 @@
 import logging
 import threading
 from collections import defaultdict
-from typing import List, Optional, Tuple
+from typing import List
 
 import numpy as np
 from sqlmodel import Session
