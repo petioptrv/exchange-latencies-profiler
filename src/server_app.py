@@ -31,18 +31,10 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-origins = [
-    "http://localhost:80",
-    "http://127.0.0.1:80",
-    "https://www.petrov-automations.com",
-    "https://www-petrov-automations-com.filesusr.com",
-    "https://23dbecd5-d0e8-4952-9285-a717bf12f0f7.filesusr.com",
-]
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
