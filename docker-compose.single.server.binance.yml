@@ -51,8 +51,7 @@ services:
       prestart:
         condition: service_completed_successfully
     ports:
-      - "80:80"
-      - "443:443"
+      - "80:8000"
     build:
       context: .
       dockerfile: Dockerfile
