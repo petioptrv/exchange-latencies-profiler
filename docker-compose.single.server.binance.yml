@@ -25,7 +25,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    restart: always
+    restart: on-failure
     depends_on:
       db:
         condition: service_healthy
