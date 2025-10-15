@@ -42,16 +42,13 @@ services:
   server:
     image: '${DOCKER_IMAGE?Variable not set}:${TAG-latest}'
     restart: always
-    networks:
-      - default
+    network_mode: "host"
     depends_on:
       db:
         condition: service_healthy
         restart: true
       prestart:
         condition: service_completed_successfully
-    expose:
-      - "8000"
     build:
       context: .
       dockerfile: Dockerfile
