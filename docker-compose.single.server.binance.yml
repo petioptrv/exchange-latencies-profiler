@@ -50,8 +50,8 @@ services:
         restart: true
       prestart:
         condition: service_completed_successfully
-    ports:
-      - "80:8000"
+    expose:
+      - "8000"
     build:
       context: .
       dockerfile: Dockerfile
