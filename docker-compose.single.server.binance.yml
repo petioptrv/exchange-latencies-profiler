@@ -50,11 +50,9 @@ services:
         restart: true
       prestart:
         condition: service_completed_successfully
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/utils/health-check/"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+    ports:
+      - "80:80"
+      - "443:443"
     build:
       context: .
       dockerfile: Dockerfile
