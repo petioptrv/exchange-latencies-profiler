@@ -9,6 +9,15 @@ docker-start-infra:
 docker-stop-infra:
 	docker compose -f docker-compose.infra.base.yml -f docker-compose.infra.yml --env-file .env stop
 
+docker-build-single-server-binance:
+	docker compose -f docker-compose.single.server.binance.yml --env-file .env build
+
+docker-start-single-server-binance:
+	docker compose -f docker-compose.single.server.binance.yml --env-file .env up -d
+
+docker-stop-single-server-binance:
+	docker compose -f docker-compose.single.server.binance.yml --env-file .env stop
+
 docker-build-local:
 	docker compose -f docker-compose.base.yml -f docker-compose.local.yml --env-file .env-local build
 
