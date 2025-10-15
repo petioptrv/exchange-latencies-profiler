@@ -60,6 +60,11 @@ services:
       dockerfile: Dockerfile
     env_file:
       - .env
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   profiler:
     image: '${DOCKER_IMAGE?Variable not set}:${TAG-latest}'
@@ -78,6 +83,11 @@ services:
       dockerfile: Dockerfile
     env_file:
       - .env
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 volumes:
   app-db-data:
