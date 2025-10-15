@@ -62,6 +62,7 @@ class WSClientBase(ThreadedTradesStreamerBase, ABC):
 
         while not self._stopped:
             try:
+                logger.info("Starting ws connection")
                 self._ws.run_forever(ping_interval=20, ping_timeout=10)
             except KeyboardInterrupt:
                 logger.info("Closing websocket connection")

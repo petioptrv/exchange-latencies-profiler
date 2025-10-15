@@ -51,6 +51,7 @@ class TradeReceiptsAggregator:
                 max_trade_latency=max(self._current_minute_trade_latencies),
                 total_trade_volume_in_quote=self._current_minute_volume_in_quote,
             )
+            logger.info(f"Emitting aggregation {aggregation}.")
             self.aggregation_event.emit(aggregation)
 
     def _reset_aggregation(self):
