@@ -1,6 +1,6 @@
 services:
   db:
-    restart: "no"
+    restart: always
     ports:
       - "5432:5432"
     env_file:
@@ -11,6 +11,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    restart: always
     depends_on:
       db:
         condition: service_healthy
