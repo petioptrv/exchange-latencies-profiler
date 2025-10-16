@@ -36,6 +36,7 @@ class DBCleaner(Thread):
 
     def _clean_historical_data(self):
         cutoff_date = datetime.now(timezone.utc) - timedelta(days=8)  # One week + one day
+        self._logger.info(f"Deleting historical entries older than {cutoff_date}")
 
         with Session(engine) as session:
             delete_old_historical_minute_trade_latencies(
