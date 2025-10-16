@@ -23,6 +23,8 @@ class DBCleaner(Thread):
     def run(self):
         self._logger.info("DB Cleaner thread started")
 
+        self._clean_historical_data()
+
         while not self._stop_event.is_set():
             now = datetime.now(timezone.utc)
             midnight = datetime.combine(now.date() + timedelta(days=1), time.min, tzinfo=now.tzinfo)
