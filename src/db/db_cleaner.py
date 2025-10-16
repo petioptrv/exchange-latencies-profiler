@@ -25,7 +25,7 @@ class DBCleaner(Thread):
 
         while not self._stop_event.is_set():
             now = datetime.now(timezone.utc)
-            midnight = datetime.combine(now.date() + timedelta(days=1), time.min)
+            midnight = datetime.combine(now.date() + timedelta(days=1), time.min, tzinfo=now.tzinfo)
             seconds_until_midnight = (midnight - now).total_seconds()
 
             if not self._stop_event.wait(timeout=seconds_until_midnight):
@@ -35,7 +35,7 @@ class DBCleaner(Thread):
                     self._logger.error(f"Error during database cleanup: {e}")
 
     def _clean_historical_data(self):
-        cutoff_date = datetime.now(timezone.utc) - timedelta(days=8)  # One week + one day
+        cutoff_date = datetime.now(timezone.utc) - timedelta(days=8)  # One week and one day
         self._logger.info(f"Deleting historical entries older than {cutoff_date}")
 
         with Session(engine) as session:
